@@ -13,92 +13,92 @@ import numpy as np
 import os
 
 # Define a secure password (replace with a strong password in production)
-SECURE_PASSWORD = "HealthCenter2025"  # استبدل بكلمة مرور قوية في الإنتاج
+SECURE_PASSWORD = "HealthCenter2025"  # Replace with a strong password in production
 
 # Mapping for ratings
 RATING_MAP = {
-    'ممتاز': 5,
-    'جيد جدا': 4,
-    'جيد': 3,
-    'مقبول': 2,
-    'ضعيف': 1
+    'Excellent': 5,
+    'Very Good': 4,
+    'Good': 3,
+    'Acceptable': 2,
+    'Poor': 1
 }
 
 # Yes/No mapping for percentages
 YES_MAP = {
-    'نعم': 'yes',
-    'إلى حد ما': 'to_some_extent',
-    'لا': 'no'
+    'Yes': 'yes',
+    'To Some Extent': 'to_some_extent',
+    'No': 'no'
 }
 
 # Define sections with their column names (exact or partial for matching)
 SECTIONS = {
     'General Medical': [
-        'مدى سهولة الوصول والحجز لدى الأطباء',
-        'وضوح التشخيص والشرح للمريض',
-        'مستوى الاهتمام والمتابعة'
+        'Ease of access and booking with doctors',
+        'Clarity of diagnosis and explanation to the patient',
+        'Level of care and follow-up'
     ],
     'Dental': [
-        'سهولة الحجز لمواعيد الأسنان',
-        'جودة الخدمة المقدمة',
-        'نظافة وتجهيزات عيادة الأسنان'
+        'Ease of booking dental appointments',
+        'Quality of service provided',
+        'Cleanliness and equipment of the dental clinic'
     ],
     'Pediatrics': [
-        'تعامل الكادر الطبي مع الأمهات والأطفال',
-        'توفّر الفحوصات اللازمة للأطفال',
-        'توفير إرشادات صحية للأم والطفل'
+        'Staff interaction with mothers and children',
+        'Availability of necessary child check-ups',
+        'Provision of health guidance for mother and child'
     ],
     'Pharmacy': [
-        'سرعة صرف الأدوية',
-        'توافر الأدوية المطلوبة',
-        'وضوح التعليمات عند صرف الدواء'
+        'Speed of medication dispensing',
+        'Availability of required medications',
+        'Clarity of instructions when dispensing medication'
     ],
     'Family Clinic': [
-        'جودة الخدمات المقدمة في عيادة الأسرة',
-        'الاهتمام بتقديم الاستشارات الصحية'
+        'Quality of services provided in the family clinic',
+        'Attention to providing health consultations'
     ],
     'Lab': [
-        'سهولة إجراء الفحوصات المخبرية',
-        'سرعة استلام النتائج',
-        'دقة النتائج المخبرية'
+        'Ease of conducting lab tests',
+        'Speed of receiving results',
+        'Accuracy of lab results'
     ],
     'Emergency': [
-        'سرعة الاستجابة في قسم الطوارئ',
-        'كفاءة الكادر الطبي في التعامل مع الحالات الطارئة',
-        'توفر التجهيزات والمعدات اللازمة للحالات الطارئة'
+        'Speed of response in the emergency department',
+        'Efficiency of medical staff in handling emergency cases',
+        'Availability of necessary equipment for emergency cases'
     ],
     'Registration': [
-        'سهولة إجراءات التسجيل',
-        'سرعة إنجاز المعاملات'
+        'Ease of registration procedures',
+        'Speed of transaction processing'
     ],
     'Waiting Area': [
-        'توفر أماكن جلوس كافية',
-        'نظافة قاعة الانتظار',
-        'مدة الانتظار قبل الدخول إلى العيادة'
+        'Availability of sufficient seating',
+        'Cleanliness of the waiting area',
+        'Waiting time before entering the clinic'
     ],
     'Cleanliness': [
-        'نظافة المركز بشكل عام',
-        'توفر دورات مياه نظيفة وصالحة للاستخدام'
+        'Overall cleanliness of the center',
+        'Availability of clean and functional restrooms'
     ]
 }
 
 # Other key columns
-OVERALL_EXPERIENCE_COL = 'بشكل عام، كيف تقيم تجربتك في المركز الصحي؟'
-RECOMMEND_COL = 'هل توصي الآخرين بمراجعة هذا المركز الصحي؟'
-ALL_SERVICES_COL = 'هل تعتقد أن المركز يوفر جميع الخدمات الصحية التي تحتاجها'
-HOURS_SUITABLE_COL = 'هل ساعات عمل المركز مناسبة لك'
-POSITIVES_COL = 'ما أبرز الإيجابيات التي وجدتها في المركز الصحي؟'
-SUGGESTIONS_COL = 'ما هي اقتراحاتك لتطوير وتحسين خدمات المركز الصحي؟'
+OVERALL_EXPERIENCE_COL = 'Overall, how would you rate your experience at the health center?'
+RECOMMEND_COL = 'Would you recommend others to visit this health center?'
+ALL_SERVICES_COL = 'Do you believe the center provides all the health services you need?'
+HOURS_SUITABLE_COL = 'Are the center\'s operating hours suitable for you?'
+POSITIVES_COL = 'What are the most notable positives you found at the health center?'
+SUGGESTIONS_COL = 'What are your suggestions for improving and developing the health center\'s services?'
 
 def analyze_csv(file_path):
     try:
         # Read CSV
         df = pd.read_csv(file_path, encoding='utf-8')
     except FileNotFoundError:
-        st.error(f"خطأ: الملف '{file_path}' غير موجود. الرجاء رفع ملف CSV صالح.")
+        st.error(f"Error: The file '{file_path}' does not exist. Please upload a valid CSV file.")
         return None
     except Exception as e:
-        st.error(f"خطأ أثناء قراءة الملف: {e}")
+        st.error(f"Error while reading the file: {e}")
         return None
 
     # Strip any leading/trailing spaces in column names
@@ -107,7 +107,7 @@ def analyze_csv(file_path):
     # Identify all rating columns (those with values in RATING_MAP)
     rating_cols = [col for col in df.columns if df[col].dropna().isin(RATING_MAP.keys()).any()]
 
-    # Filter out responses where all ratings are the same (e.g., all 'ممتاز', 'ضعيف', etc.)
+    # Filter out responses where all ratings are the same (e.g., all 'Excellent', 'Poor', etc.)
     filtered_df = df.copy()
     if rating_cols:
         # Convert ratings to numeric for filtering
@@ -119,7 +119,7 @@ def analyze_csv(file_path):
 
     # If no rows remain after filtering, display a warning
     if filtered_df.empty:
-        st.warning("لا توجد ردود متبقية بعد تصفية الردود ذات التقييمات المتطابقة (مثل كلها 'ممتاز' أو 'ضعيف').")
+        st.warning("No responses remain after filtering out uniform ratings (e.g., all 'Excellent' or 'Poor').")
         return None
 
     # Map ratings to numbers for the filtered DataFrame
@@ -149,9 +149,9 @@ def analyze_csv(file_path):
     # Other metrics
     if RECOMMEND_COL in filtered_df.columns:
         recommend_counts = filtered_df[RECOMMEND_COL].value_counts(normalize=True) * 100
-        recommend_yes = recommend_counts.get('نعم', 0)
-        recommend_no = recommend_counts.get('لا', 0)
-        recommend_some = recommend_counts.get('إلى حد ما', 0)
+        recommend_yes = recommend_counts.get('Yes', 0)
+        recommend_no = recommend_counts.get('No', 0)
+        recommend_some = recommend_counts.get('To Some Extent', 0)
     else:
         recommend_yes = 0
         recommend_no = 0
@@ -159,9 +159,9 @@ def analyze_csv(file_path):
 
     if ALL_SERVICES_COL in filtered_df.columns:
         services_counts = filtered_df[ALL_SERVICES_COL].value_counts(normalize=True) * 100
-        services_yes = services_counts.get('نعم', 0)
-        services_some = services_counts.get('إلى حد ما', 0)
-        services_no = services_counts.get('لا', 0)
+        services_yes = services_counts.get('Yes', 0)
+        services_some = services_counts.get('To Some Extent', 0)
+        services_no = services_counts.get('No', 0)
     else:
         services_yes = 0
         services_some = 0
@@ -169,9 +169,9 @@ def analyze_csv(file_path):
 
     if HOURS_SUITABLE_COL in filtered_df.columns:
         hours_counts = filtered_df[HOURS_SUITABLE_COL].value_counts(normalize=True) * 100
-        hours_yes = hours_counts.get('نعم', 0)
-        hours_no = hours_counts.get('لا', 0)
-        hours_some = hours_counts.get('إلى حد ما', 0)
+        hours_yes = hours_counts.get('Yes', 0)
+        hours_no = hours_counts.get('No', 0)
+        hours_some = hours_counts.get('To Some Extent', 0)
     else:
         hours_yes = 0
         hours_no = 0
@@ -199,29 +199,29 @@ def analyze_csv(file_path):
     }
 
 # Streamlit UI with security
-st.title("تحليل استطلاعات المركز الصحي")
+st.title("Health Center Survey Analysis")
 
 # Password protection using session state
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
-    st.subheader("تسجيل الدخول")
-    password = st.text_input("أدخل كلمة المرور", type="password")
-    if st.button("تسجيل الدخول"):
+    st.subheader("Login")
+    password = st.text_input("Enter Password", type="password")
+    if st.button("Login"):
         if password == SECURE_PASSWORD:
             st.session_state.authenticated = True
-            st.success("تم تسجيل الدخول بنجاح!")
+            st.success("Login successful!")
         else:
-            st.error("كلمة المرور غير صحيحة")
+            st.error("Incorrect password")
     st.stop()
 
 # Main application
-st.write("ارفع ملف CSV لتحليل تقييمات المركز الصحي.")
-st.warning("تحذير: تأكد من أن ملف CSV لا يحتوي على معلومات شخصية حساسة (مثل الأسماء أو أرقام الهوية) لحماية خصوصية المستجيبين.")
+st.write("Upload a CSV file to analyze the health center ratings.")
+st.warning("Warning: Ensure the CSV file does not contain sensitive personal information (e.g., names or ID numbers) to protect respondent privacy.")
 
 # File uploader
-uploaded_file = st.file_uploader("اختر ملف CSV", type="csv")
+uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     # Save the uploaded file temporarily
@@ -238,32 +238,32 @@ if uploaded_file is not None:
 
     # Display results
     if results is not None:
-        st.header("نتائج التحليل")
+        st.header("Analysis Results")
 
         # Centralized and Overall Scores
-        st.subheader("التقييمات العامة")
-        st.write(f"- **التقييم المركزي** (متوسط جميع التقييمات عبر الردود): {results['centralized_score']:.2f} من 5")
-        st.write(f"- **تقييم التجربة العامة** (متوسط حقل التجربة العامة فقط): {results['overall_score']:.2f} من 5")
+        st.subheader("General Ratings")
+        st.write(f"- **Centralized Score** (average of all ratings across responses): {results['centralized_score']:.2f} out of 5")
+        st.write(f"- **Overall Experience Score** (average of overall experience field only): {results['overall_score']:.2f} out of 5")
 
         # Section Scores
-        st.subheader("التقييمات حسب القسم")
+        st.subheader("Ratings by Section")
         st.table({
-            "القسم": list(results['section_scores'].keys()),
-            "التقييم (من 5)": [f"{score:.2f}" for score in results['section_scores'].values()]
+            "Section": list(results['section_scores'].keys()),
+            "Rating (out of 5)": [f"{score:.2f}" for score in results['section_scores'].values()]
         })
 
         # Other Metrics
-        st.subheader("مقاييس أخرى")
-        st.write(f"- **نسبة التوصية**: {results['recommend_yes']:.0f}% \"نعم\"، {results['recommend_some']:.0f}% \"إلى حد ما\"، {results['recommend_no']:.0f}% \"لا\"")
-        st.write(f"- **نسبة توفير جميع الخدمات**: {results['services_yes']:.0f}% \"نعم\"، {results['services_some']:.0f}% \"إلى حد ما\"، {results['services_no']:.0f}% \"لا\"")
-        st.write(f"- **نسبة ملاءمة ساعات العمل**: {results['hours_yes']:.0f}% \"نعم\"، {results['hours_some']:.0f}% \"إلى حد ما\"، {results['hours_no']:.0f}% \"لا\"")
+        st.subheader("Other Metrics")
+        st.write(f"- **Recommendation Rate**: {results['recommend_yes']:.0f}% 'Yes', {results['recommend_some']:.0f}% 'To Some Extent', {results['recommend_no']:.0f}% 'No'")
+        st.write(f"- **All Services Availability**: {results['services_yes']:.0f}% 'Yes', {results['services_some']:.0f}% 'To Some Extent', {results['services_no']:.0f}% 'No'")
+        st.write(f"- **Operating Hours Suitability**: {results['hours_yes']:.0f}% 'Yes', {results['hours_some']:.0f}% 'To Some Extent', {results['hours_no']:.0f}% 'No'")
 
         # Open Text Responses
-        st.subheader("الردود النصية")
-        st.write("**أبرز الإيجابيات**:")
+        st.subheader("Open Text Responses")
+        st.write("**Notable Positives**:")
         for p in results['positives']:
             st.write(f"- {p}")
-        st.write("**اقتراحات التحسين**:")
+        st.write("**Improvement Suggestions**:")
         for s in results['suggestions']:
             st.write(f"- {s}")
 
