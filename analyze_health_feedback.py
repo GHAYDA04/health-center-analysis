@@ -12,8 +12,9 @@ import pandas as pd
 import numpy as np
 import os
 
-# Define a secure password (replace with a strong password in production)
-SECURE_PASSWORD = "HealthCenter2025"  # Replace with a strong password in production
+# Retrieve password from environment variable (set it in your environment or Streamlit Secrets)
+import os
+SECURE_PASSWORD = os.getenv("APP_PASSWORD")  # Fallback to default if not set
 
 # Mapping for ratings
 RATING_MAP = {
@@ -129,13 +130,15 @@ def analyze_csv(file_path):
     all_ratings = numeric_df.values.flatten()
     all_ratings = all_ratings[~np.isnan(all_ratings)]
     centralized_score = np.mean(all_ratings) if len(all_ratings) > 0 else 0
+    centralized_score_percent = (centralized_score / 5) * 100
 
     # Overall Experience Score
     if OVERALL_EXPERIENCE_COL in numeric_df.columns:
         overall_scores = numeric_df[OVERALL_EXPERIENCE_COL].dropna()
         overall_score = np.mean(overall_scores) if not overall_scores.empty else 0
+        overall_score_percent = (overall_score / 5) * 100
     else:
-        overall_score = 0
+        overall_score_percent = 0
 
     # Section scores
     section_scores = {}
@@ -144,7 +147,8 @@ def analyze_csv(file_path):
         if matched_cols:
             section_data = numeric_df[matched_cols].values.flatten()
             section_data = section_data[~np.isnan(section_data)]
-            section_scores[section] = np.mean(section_data) if len(section_data) > 0 else 0
+            section_score = np.mean(section_data) if len(section_data) > 0 else 0
+            section_scores[section] = (section_score / 5) * 100
 
     # Other metrics
     if RECOMMEND_COL in filtered_df.columns:
@@ -182,8 +186,8 @@ def analyze_csv(file_path):
     suggestions = filtered_df[SUGGESTIONS_COL].dropna().unique().tolist() if SUGGESTIONS_COL in filtered_df.columns else []
 
     return {
-        'centralized_score': centralized_score,
-        'overall_score': overall_score,
+        'centralized_score_percent': centralized_score_percent,
+        'overall_score_percent': overall_score_percent,
         'section_scores': section_scores,
         'recommend_yes': recommend_yes,
         'recommend_no': recommend_no,
@@ -242,14 +246,14 @@ if uploaded_file is not None:
 
         # Centralized and Overall Scores
         st.subheader("General Ratings")
-        st.write(f"- **Centralized Score** (average of all ratings across responses): {results['centralized_score']:.2f} out of 5")
-        st.write(f"- **Overall Experience Score** (average of overall experience field only): {results['overall_score']:.2f} out of 5")
+        st.write(f"- **Centralized Score**: {results['centralized_score_percent']:.0f}%")
+        st.write(f"- **Overall Experience Score**: {results['overall_score_percent']:.0f}%")
 
         # Section Scores
         st.subheader("Ratings by Section")
         st.table({
             "Section": list(results['section_scores'].keys()),
-            "Rating (out of 5)": [f"{score:.2f}" for score in results['section_scores'].values()]
+            "Rating (%)": [f"{score:.0f}" for score in results['section_scores'].values()]
         })
 
         # Other Metrics
