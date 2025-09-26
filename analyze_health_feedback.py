@@ -11,7 +11,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-import tabula  # For PDF to DataFrame conversion
+import pdfplumber  # Replace tabula with pdfplumber
 
 # Retrieve password from environment variable (set it in your environment or Streamlit Secrets)
 SECURE_PASSWORD = os.getenv("APP_PASSWORD", "HealthCenter2025")  # Fallback to default if not set
@@ -229,19 +229,24 @@ if uploaded_file is not None:
                 df = pd.read_csv(uploaded_file, encoding='utf-8')
                 st.success("CSV file loaded successfully.")
             else:
-                # Convert PDF to DataFrame using tabula-py with explicit JVM path
+                # Convert PDF to DataFrame using pdfplumber
                 try:
-                    # Use the latest Java path
-                    java_path = "C:\\Program Files\\Java\\jdk-25\\bin\\java.exe"
-                    df_list = tabula.read_pdf(uploaded_file, pages='all', lattice=True, multiple_tables=False, java_options=['-Xmx256m'], jvm_path=java_path)
-                    if df_list:
-                        df = pd.concat(df_list, ignore_index=True)
-                        st.success("PDF file converted and loaded successfully.")
-                    else:
-                        st.error("Error: No tables found in the PDF. Please ensure the PDF contains structured tables.")
-                        st.stop()
+                    with pdfplumber.open(uploaded_file) as pdf:
+                        # Extract all tables from the first page (adjust pages as needed)
+                        tables = []
+                        for page in pdf.pages:
+                            tables.extend(page.extract_tables())
+                        if tables:
+                            # Convert the first table to DataFrame (assuming one main table)
+                            df = pd.DataFrame(tables[0], columns=[f"Column_{i}" for i in range(len(tables[0][0]))] if tables[0] else [])
+                            # Clean up NaN or None values
+                            df = df.replace({pd.NA: None, np.nan: None})
+                            st.success("PDF file converted and loaded successfully.")
+                        else:
+                            st.error("Error: No tables found in the PDF. Please ensure the PDF contains structured tables.")
+                            st.stop()
                 except Exception as e:
-                    st.error(f"Error converting PDF: {e}. Please check the Java path or ensure the PDF has tables.")
+                    st.error(f"Error converting PDF: {e}. Please ensure the PDF is readable.")
                     st.stop()
 
         # Analyze the data
