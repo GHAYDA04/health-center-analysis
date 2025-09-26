@@ -229,9 +229,11 @@ if uploaded_file is not None:
                 df = pd.read_csv(uploaded_file, encoding='utf-8')
                 st.success("CSV file loaded successfully.")
             else:
-                # Convert PDF to DataFrame using tabula-py
+                # Convert PDF to DataFrame using tabula-py with explicit JVM path
                 try:
-                    df_list = tabula.read_pdf(uploaded_file, pages='all', lattice=True, multiple_tables=False)
+                    # Use the latest Java path
+                    java_path = "C:\\Program Files\\Java\\jdk-25\\bin\\java.exe"
+                    df_list = tabula.read_pdf(uploaded_file, pages='all', lattice=True, multiple_tables=False, java_options=['-Xmx256m'], jvm_path=java_path)
                     if df_list:
                         df = pd.concat(df_list, ignore_index=True)
                         st.success("PDF file converted and loaded successfully.")
@@ -239,7 +241,7 @@ if uploaded_file is not None:
                         st.error("Error: No tables found in the PDF. Please ensure the PDF contains structured tables.")
                         st.stop()
                 except Exception as e:
-                    st.error(f"Error converting PDF: {e}. Ensure Java is installed and the PDF has tables.")
+                    st.error(f"Error converting PDF: {e}. Please check the Java path or ensure the PDF has tables.")
                     st.stop()
 
         # Analyze the data
