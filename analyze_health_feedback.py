@@ -17,78 +17,78 @@ SECURE_PASSWORD = "HealthCenter2025"  # Replace with a strong password in produc
 
 # Mapping for ratings
 RATING_MAP = {
-    'Excellent': 5,
-    'Very Good': 4,
-    'Good': 3,
-    'Acceptable': 2,
-    'Poor': 1
+    'ممتاز': 5,
+    'جيد جدا': 4,
+    'جيد': 3,
+    'مقبول': 2,
+    'ضعيف': 1
 }
 
 # Yes/No mapping for percentages
 YES_MAP = {
-    'Yes': 'yes',
-    'To Some Extent': 'to_some_extent',
-    'No': 'no'
+    'نعم': 'yes',
+    'إلى حد ما': 'to_some_extent',
+    'لا': 'no'
 }
 
 # Define sections with their column names (exact or partial for matching)
 SECTIONS = {
     'General Medical': [
-        'Ease of access and booking with doctors',
-        'Clarity of diagnosis and explanation to the patient',
-        'Level of care and follow-up'
+        'مدى سهولة الوصول والحجز لدى الأطباء',
+        'وضوح التشخيص والشرح للمريض',
+        'مستوى الاهتمام والمتابعة'
     ],
     'Dental': [
-        'Ease of booking dental appointments',
-        'Quality of service provided',
-        'Cleanliness and equipment of the dental clinic'
+        'سهولة الحجز لمواعيد الأسنان',
+        'جودة الخدمة المقدمة',
+        'نظافة وتجهيزات عيادة الأسنان'
     ],
     'Pediatrics': [
-        'Staff interaction with mothers and children',
-        'Availability of necessary child check-ups',
-        'Provision of health guidance for mother and child'
+        'تعامل الكادر الطبي مع الأمهات والأطفال',
+        'توفّر الفحوصات اللازمة للأطفال',
+        'توفير إرشادات صحية للأم والطفل'
     ],
     'Pharmacy': [
-        'Speed of medication dispensing',
-        'Availability of required medications',
-        'Clarity of instructions when dispensing medication'
+        'سرعة صرف الأدوية',
+        'توافر الأدوية المطلوبة',
+        'وضوح التعليمات عند صرف الدواء'
     ],
     'Family Clinic': [
-        'Quality of services provided in the family clinic',
-        'Attention to providing health consultations'
+        'جودة الخدمات المقدمة في عيادة الأسرة',
+        'الاهتمام بتقديم الاستشارات الصحية'
     ],
     'Lab': [
-        'Ease of conducting lab tests',
-        'Speed of receiving results',
-        'Accuracy of lab results'
+        'سهولة إجراء الفحوصات المخبرية',
+        'سرعة استلام النتائج',
+        'دقة النتائج المخبرية'
     ],
     'Emergency': [
-        'Speed of response in the emergency department',
-        'Efficiency of medical staff in handling emergency cases',
-        'Availability of necessary equipment for emergency cases'
+        'سرعة الاستجابة في قسم الطوارئ',
+        'كفاءة الكادر الطبي في التعامل مع الحالات الطارئة',
+        'توفر التجهيزات والمعدات اللازمة للحالات الطارئة'
     ],
     'Registration': [
-        'Ease of registration procedures',
-        'Speed of transaction processing'
+        'سهولة إجراءات التسجيل',
+        'سرعة إنجاز المعاملات'
     ],
     'Waiting Area': [
-        'Availability of sufficient seating',
-        'Cleanliness of the waiting area',
-        'Waiting time before entering the clinic'
+        'توفر أماكن جلوس كافية',
+        'نظافة قاعة الانتظار',
+        'مدة الانتظار قبل الدخول إلى العيادة'
     ],
     'Cleanliness': [
-        'Overall cleanliness of the center',
-        'Availability of clean and functional restrooms'
+        'نظافة المركز بشكل عام',
+        'توفر دورات مياه نظيفة وصالحة للاستخدام'
     ]
 }
 
 # Other key columns
-OVERALL_EXPERIENCE_COL = 'Overall, how would you rate your experience at the health center?'
-RECOMMEND_COL = 'Would you recommend others to visit this health center?'
-ALL_SERVICES_COL = 'Do you believe the center provides all the health services you need?'
-HOURS_SUITABLE_COL = 'Are the center\'s operating hours suitable for you?'
-POSITIVES_COL = 'What are the most notable positives you found at the health center?'
-SUGGESTIONS_COL = 'What are your suggestions for improving and developing the health center\'s services?'
+OVERALL_EXPERIENCE_COL = 'بشكل عام، كيف تقيم تجربتك في المركز الصحي؟'
+RECOMMEND_COL = 'هل توصي الآخرين بمراجعة هذا المركز الصحي؟'
+ALL_SERVICES_COL = 'هل تعتقد أن المركز يوفر جميع الخدمات الصحية التي تحتاجها'
+HOURS_SUITABLE_COL = 'هل ساعات عمل المركز مناسبة لك'
+POSITIVES_COL = 'ما أبرز الإيجابيات التي وجدتها في المركز الصحي؟'
+SUGGESTIONS_COL = 'ما هي اقتراحاتك لتطوير وتحسين خدمات المركز الصحي؟'
 
 def analyze_csv(file_path):
     try:
@@ -107,7 +107,7 @@ def analyze_csv(file_path):
     # Identify all rating columns (those with values in RATING_MAP)
     rating_cols = [col for col in df.columns if df[col].dropna().isin(RATING_MAP.keys()).any()]
 
-    # Filter out responses where all ratings are the same (e.g., all 'Excellent', 'Poor', etc.)
+    # Filter out responses where all ratings are the same (e.g., all 'ممتاز', 'ضعيف', etc.)
     filtered_df = df.copy()
     if rating_cols:
         # Convert ratings to numeric for filtering
@@ -119,7 +119,7 @@ def analyze_csv(file_path):
 
     # If no rows remain after filtering, display a warning
     if filtered_df.empty:
-        st.warning("No responses remain after filtering out uniform ratings (e.g., all 'Excellent' or 'Poor').")
+        st.warning("No responses remain after filtering out uniform ratings (e.g., all 'ممتاز' or 'ضعيف').")
         return None
 
     # Map ratings to numbers for the filtered DataFrame
@@ -149,9 +149,9 @@ def analyze_csv(file_path):
     # Other metrics
     if RECOMMEND_COL in filtered_df.columns:
         recommend_counts = filtered_df[RECOMMEND_COL].value_counts(normalize=True) * 100
-        recommend_yes = recommend_counts.get('Yes', 0)
-        recommend_no = recommend_counts.get('No', 0)
-        recommend_some = recommend_counts.get('To Some Extent', 0)
+        recommend_yes = recommend_counts.get('نعم', 0)
+        recommend_no = recommend_counts.get('لا', 0)
+        recommend_some = recommend_counts.get('إلى حد ما', 0)
     else:
         recommend_yes = 0
         recommend_no = 0
@@ -159,9 +159,9 @@ def analyze_csv(file_path):
 
     if ALL_SERVICES_COL in filtered_df.columns:
         services_counts = filtered_df[ALL_SERVICES_COL].value_counts(normalize=True) * 100
-        services_yes = services_counts.get('Yes', 0)
-        services_some = services_counts.get('To Some Extent', 0)
-        services_no = services_counts.get('No', 0)
+        services_yes = services_counts.get('نعم', 0)
+        services_some = services_counts.get('إلى حد ما', 0)
+        services_no = services_counts.get('لا', 0)
     else:
         services_yes = 0
         services_some = 0
@@ -169,9 +169,9 @@ def analyze_csv(file_path):
 
     if HOURS_SUITABLE_COL in filtered_df.columns:
         hours_counts = filtered_df[HOURS_SUITABLE_COL].value_counts(normalize=True) * 100
-        hours_yes = hours_counts.get('Yes', 0)
-        hours_no = hours_counts.get('No', 0)
-        hours_some = hours_counts.get('To Some Extent', 0)
+        hours_yes = hours_counts.get('نعم', 0)
+        hours_no = hours_counts.get('لا', 0)
+        hours_some = hours_counts.get('إلى حد ما', 0)
     else:
         hours_yes = 0
         hours_no = 0
