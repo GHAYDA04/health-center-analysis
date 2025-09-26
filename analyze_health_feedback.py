@@ -11,10 +11,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+import tabula  # For PDF to DataFrame conversion
 
 # Retrieve password from environment variable (set it in your environment or Streamlit Secrets)
-import os
-SECURE_PASSWORD = os.getenv("APP_PASSWORD")  # Fallback to default if not set
+SECURE_PASSWORD = os.getenv("APP_PASSWORD", "HealthCenter2025")  # Fallback to default if not set
 
 # Mapping for ratings
 RATING_MAP = {
@@ -91,17 +91,7 @@ HOURS_SUITABLE_COL = 'هل ساعات عمل المركز مناسبة لك'
 POSITIVES_COL = 'ما أبرز الإيجابيات التي وجدتها في المركز الصحي؟'
 SUGGESTIONS_COL = 'ما هي اقتراحاتك لتطوير وتحسين خدمات المركز الصحي؟'
 
-def analyze_csv(file_path):
-    try:
-        # Read CSV
-        df = pd.read_csv(file_path, encoding='utf-8')
-    except FileNotFoundError:
-        st.error(f"Error: The file '{file_path}' does not exist. Please upload a valid CSV file.")
-        return None
-    except Exception as e:
-        st.error(f"Error while reading the file: {e}")
-        return None
-
+def analyze_data(df):
     # Strip any leading/trailing spaces in column names
     df.columns = df.columns.str.strip()
 
@@ -221,53 +211,70 @@ if not st.session_state.authenticated:
     st.stop()
 
 # Main application
-st.write("Upload a CSV file to analyze the health center ratings.")
-st.warning("Warning: Ensure the CSV file does not contain sensitive personal information (e.g., names or ID numbers) to protect respondent privacy.")
+st.write("Upload a CSV or PDF file to analyze the health center ratings.")
+st.warning("Warning: Ensure the file does not contain sensitive personal information (e.g., names or ID numbers) to protect respondent privacy.")
 
-# File uploader
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+# File uploader with support for CSV and PDF
+uploaded_file = st.file_uploader("Choose a CSV or PDF file", type=["csv", "pdf"])
 
 if uploaded_file is not None:
-    # Save the uploaded file temporarily
-    temp_file_path = "temp_feedback.csv"
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Check file extension
+    file_extension = uploaded_file.name.split('.')[-1].lower()
+    if file_extension not in ["csv", "pdf"]:
+        st.error("Error: Only CSV or PDF files are supported. Please upload a file with a .csv or .pdf extension.")
+    else:
+        with st.spinner("Processing file..."):
+            if file_extension == "csv":
+                # Read CSV directly
+                df = pd.read_csv(uploaded_file, encoding='utf-8')
+                st.success("CSV file loaded successfully.")
+            else:
+                # Convert PDF to DataFrame using tabula-py
+                try:
+                    df_list = tabula.read_pdf(uploaded_file, pages='all', lattice=True, multiple_tables=False)
+                    if df_list:
+                        df = pd.concat(df_list, ignore_index=True)
+                        st.success("PDF file converted and loaded successfully.")
+                    else:
+                        st.error("Error: No tables found in the PDF. Please ensure the PDF contains structured tables.")
+                        st.stop()
+                except Exception as e:
+                    st.error(f"Error converting PDF: {e}. Ensure Java is installed and the PDF has tables.")
+                    st.stop()
 
-    # Analyze the file
-    results = analyze_csv(temp_file_path)
+        # Analyze the data
+        results = analyze_data(df)
 
-    # Immediately delete the temporary file to ensure data privacy
-    if os.path.exists(temp_file_path):
-        os.remove(temp_file_path)
+        # Display results
+        if results is not None:
+            st.header("Analysis Results")
 
-    # Display results
-    if results is not None:
-        st.header("Analysis Results")
+            # Centralized and Overall Scores
+            st.subheader("General Ratings")
+            st.write(f"- **Centralized Score**: {results['centralized_score_percent']:.0f}%")
+            st.write(f"- **Overall Experience Score**: {results['overall_score_percent']:.0f}%")
 
-        # Centralized and Overall Scores
-        st.subheader("General Ratings")
-        st.write(f"- **Centralized Score**: {results['centralized_score_percent']:.0f}%")
-        st.write(f"- **Overall Experience Score**: {results['overall_score_percent']:.0f}%")
+            # Section Scores
+            st.subheader("Ratings by Section")
+            st.table({
+                "Section": list(results['section_scores'].keys()),
+                "Rating (%)": [f"{score:.0f}" for score in results['section_scores'].values()]
+            })
 
-        # Section Scores
-        st.subheader("Ratings by Section")
-        st.table({
-            "Section": list(results['section_scores'].keys()),
-            "Rating (%)": [f"{score:.0f}" for score in results['section_scores'].values()]
-        })
+            # Other Metrics
+            st.subheader("Other Metrics")
+            st.write(f"- **Recommendation Rate**: {results['recommend_yes']:.0f}% 'Yes', {results['recommend_some']:.0f}% 'To Some Extent', {results['recommend_no']:.0f}% 'No'")
+            st.write(f"- **All Services Availability**: {results['services_yes']:.0f}% 'Yes', {results['services_some']:.0f}% 'To Some Extent', {results['services_no']:.0f}% 'No'")
+            st.write(f"- **Operating Hours Suitability**: {results['hours_yes']:.0f}% 'Yes', {results['hours_some']:.0f}% 'To Some Extent', {results['hours_no']:.0f}% 'No'")
 
-        # Other Metrics
-        st.subheader("Other Metrics")
-        st.write(f"- **Recommendation Rate**: {results['recommend_yes']:.0f}% 'Yes', {results['recommend_some']:.0f}% 'To Some Extent', {results['recommend_no']:.0f}% 'No'")
-        st.write(f"- **All Services Availability**: {results['services_yes']:.0f}% 'Yes', {results['services_some']:.0f}% 'To Some Extent', {results['services_no']:.0f}% 'No'")
-        st.write(f"- **Operating Hours Suitability**: {results['hours_yes']:.0f}% 'Yes', {results['hours_some']:.0f}% 'To Some Extent', {results['hours_no']:.0f}% 'No'")
-
-        # Open Text Responses
-        st.subheader("Open Text Responses")
-        st.write("**Notable Positives**:")
-        for p in results['positives']:
-            st.write(f"- {p}")
-        st.write("**Improvement Suggestions**:")
-        for s in results['suggestions']:
-            st.write(f"- {s}")
+            # Open Text Responses
+            st.subheader("Open Text Responses")
+            st.write("**Notable Positives**:")
+            for p in results['positives']:
+                st.write(f"- {p}")
+            st.write("**Improvement Suggestions**:")
+            for s in results['suggestions']:
+                st.write(f"- {s}")
+        else:
+            st.error("No valid data found after processing.")
 
