@@ -11,10 +11,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-import pdfplumber  # Replace tabula with pdfplumber
+import pdfplumber
 
 # Retrieve password from environment variable (set it in your environment or Streamlit Secrets)
-SECURE_PASSWORD = os.getenv("APP_PASSWORD", "HealthCenter2025")  # Fallback to default if not set
+SECURE_PASSWORD = os.getenv("APP_PASSWORD")
 
 # Mapping for ratings
 RATING_MAP = {
@@ -44,7 +44,7 @@ SECTIONS = {
         'جودة الخدمة المقدمة',
         'نظافة وتجهيزات عيادة الأسنان'
     ],
-    'Pediatrics': [
+    'Pediatrics & maternity': [
         'تعامل الكادر الطبي مع الأمهات والأطفال',
         'توفّر الفحوصات اللازمة للأطفال',
         'توفير إرشادات صحية للأم والطفل'
@@ -284,4 +284,3 @@ if uploaded_file is not None:
                 st.write(f"- {s}")
         else:
             st.error("No valid data found after processing.")
-
